@@ -1,35 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// App.jsx
+import React, { useState } from 'react';
+import Sidebar from './components/Sidebar';
+import Header from './components/Header';
+import UploadView from './components/UploadView';
+import GalleryView from './components/GalleryView';
+import AlbumsView from './components/AlbumsView';
+import SettingsView from './components/SettingsView';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+    const [currentView, setCurrentView] = useState('upload');
+    const [photos, setPhotos] = useState([]);
+    const [albums, setAlbums] = useState([
+        { id: 1, name: 'Album mặc định', photos: [], createdAt: new Date() }
+    ]);
+    const [selectedAlbum, setSelectedAlbum] = useState(1);
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    const appState = {
+        currentView,
+        setCurrentView,
+        photos,
+        setPhotos,
+        albums,
+        setAlbums,
+        selectedAlbum,
+        setSelectedAlbum
+    };
 
-export default App
+    const renderCurrentView = () => {
+        switch (currentView) {
+            case 'upload':
+                return <UploadView {...appState} />;
+            case 'gallery':
+                return <GalleryView {...appState} />;
+            case 'albums':
+                return <AlbumsView {...appState} />;
+            case 'settings':
+                return <SettingsView {...appState} />;
+            default:
+                return <UploadView {...appState} />;
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+            <div className="container mx-auto px-4 py-6">
+                <Header />
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <Sidebar {...appState} />
+
+                    <div className="lg:col-span-3">
+                        {renderCurrentView()}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default App;
