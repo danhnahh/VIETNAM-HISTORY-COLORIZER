@@ -1,0 +1,5 @@
+deoldify
+matplotlib
+scipy
+pandas
+fastprogress
