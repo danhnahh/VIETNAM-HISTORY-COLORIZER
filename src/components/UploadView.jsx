@@ -1,33 +1,77 @@
 
 import React, { useState, useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, Image, Video } from 'lucide-react';
+
+// 💡 Đổi link này thành link ngrok mỗi khi chạy mới
+const API_BASE = "http://localhost:8001";
 
 const UploadView = ({ photos, setPhotos, albums, setAlbums, selectedAlbum }) => {
     const [processing, setProcessing] = useState(false);
-    const [resultImage, setResultImage] = useState(null); // ảnh kết quả DeOldify
+    const [processingMessage, setProcessingMessage] = useState('');
+    const [resultImage, setResultImage] = useState(null);
+    const [resultVideo, setResultVideo] = useState(null);
     const fileInputRef = useRef(null);
 
-    // Gọi API DeOldify để xử lý ảnh
-    const processWithDeOldify = async (file) => {
+    // Xử lý ảnh
+    const processImageWithDeOldify = async (file) => {
         const formData = new FormData();
         formData.append("file", file);
-
         try {
-            const res = await fetch("http://localhost:8000/process_image", {
+            const res = await fetch(`${API_BASE}/process_image`, {
                 method: "POST",
                 body: formData
             });
-
             if (!res.ok) throw new Error("Lỗi xử lý ảnh");
-
             const blob = await res.blob();
             const imgUrl = URL.createObjectURL(blob);
-            setResultImage(imgUrl); // lưu ảnh kết quả
+            setResultImage(imgUrl);
             return imgUrl;
         } catch (err) {
             console.error(err);
             return null;
         }
+    };
+
+    // Xử lý video
+    const processVideoWithDeOldify = async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+            const res = await fetch(`${API_BASE}/process_video`, {
+                method: "POST",
+                body: formData
+            });
+            if (!res.ok) throw new Error("Lỗi xử lý video");
+            const blob = await res.blob();
+            const videoUrl = URL.createObjectURL(blob);
+            setResultVideo(videoUrl);
+            return videoUrl;
+        } catch (err) {
+            console.error("Lỗi xử lý video:", err);
+            return null;
+        }
+    };
+
+    // Tạo thumbnail cho video
+    const createVideoThumbnail = (file) => {
+        return new Promise((resolve) => {
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            video.onloadedmetadata = () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                video.currentTime = 1;
+            };
+
+            video.oncanplay = () => {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/png'));
+            };
+
+            video.src = URL.createObjectURL(file);
+        });
     };
 
     const handleFileUpload = async (event) => {
@@ -36,19 +80,22 @@ const UploadView = ({ photos, setPhotos, albums, setAlbums, selectedAlbum }) => 
         for (let file of files) {
             if (file.type.startsWith('image/')) {
                 setProcessing(true);
+                setProcessingMessage('Đang xử lý ảnh...');
 
                 const reader = new FileReader();
                 reader.onload = async (e) => {
-                    // Gọi AI DeOldify
-                    const processedUrl = await processWithDeOldify(file);
+                    const processedUrl = await processImageWithDeOldify(file);
 
                     const newPhoto = {
                         id: Date.now() + Math.random(),
                         name: file.name,
-                        src: processedUrl || e.target.result, // dùng ảnh xử lý nếu có
+                        src: processedUrl || e.target.result,
+                        originalSrc: e.target.result,
                         size: file.size,
                         type: file.type,
+                        mediaType: 'image',
                         uploadedAt: new Date(),
+                        isProcessed: !!processedUrl,
                         analysis: null,
                         albumId: selectedAlbum
                     };
@@ -61,9 +108,47 @@ const UploadView = ({ photos, setPhotos, albums, setAlbums, selectedAlbum }) => 
                     ));
 
                     setProcessing(false);
+                    setProcessingMessage('');
                 };
-
                 reader.readAsDataURL(file);
+
+            } else if (file.type.startsWith('video/')) {
+                setProcessing(true);
+                setProcessingMessage('Đang tô màu video...');
+
+                try {
+                    const originalVideoUrl = URL.createObjectURL(file);
+                    const thumbnail = await createVideoThumbnail(file);
+                    const processedVideoUrl = await processVideoWithDeOldify(file);
+
+                    const newVideo = {
+                        id: Date.now() + Math.random(),
+                        name: file.name,
+                        src: processedVideoUrl || originalVideoUrl,
+                        originalSrc: originalVideoUrl,
+                        thumbnail: thumbnail,
+                        size: file.size,
+                        type: file.type,
+                        mediaType: 'video',
+                        uploadedAt: new Date(),
+                        isProcessed: !!processedVideoUrl,
+                        analysis: null,
+                        albumId: selectedAlbum
+                    };
+
+                    setPhotos(prev => [...prev, newVideo]);
+                    setAlbums(prev => prev.map(album =>
+                        album.id === selectedAlbum
+                            ? { ...album, photos: [...album.photos, newVideo.id] }
+                            : album
+                    ));
+
+                } catch (error) {
+                    console.error('Lỗi xử lý video:', error);
+                }
+
+                setProcessing(false);
+                setProcessingMessage('');
             }
         }
     };
@@ -76,8 +161,13 @@ const UploadView = ({ photos, setPhotos, albums, setAlbums, selectedAlbum }) => 
                 <div className="mb-6 p-4 bg-blue-50 rounded-lg">
                     <div className="flex items-center gap-3">
                         <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-                        <span className="text-blue-700">Đang xử lý ảnh với DeOldify...</span>
+                        <span className="text-blue-700">{processingMessage}</span>
                     </div>
+                    {processingMessage.includes('video') && (
+                        <div className="mt-2 text-sm text-blue-600">
+                            💡 Video processing thường mất 2-5 phút tùy độ dài video
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -85,12 +175,16 @@ const UploadView = ({ photos, setPhotos, albums, setAlbums, selectedAlbum }) => 
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer"
             >
-                <Upload size={48} className="mx-auto mb-4 text-gray-400" />
+                <div className="flex justify-center items-center gap-4 mb-4">
+                    <Image size={32} className="text-gray-400" />
+                    <Video size={32} className="text-gray-400" />
+                    <Upload size={48} className="text-gray-400" />
+                </div>
                 <p className="text-lg font-medium text-gray-600 mb-2">
-                    Kéo thả ảnh vào đây hoặc click để chọn
+                    Kéo thả ảnh/video vào đây hoặc click để chọn
                 </p>
                 <p className="text-gray-500">
-                    Hỗ trợ JPG, PNG (tối đa 100MB)
+                    Hỗ trợ JPG, PNG, MP4, AVI, MOV (tối đa 200MB)
                 </p>
             </div>
 
@@ -98,15 +192,32 @@ const UploadView = ({ photos, setPhotos, albums, setAlbums, selectedAlbum }) => 
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={handleFileUpload}
                 className="hidden"
             />
 
-            {resultImage && (
+            {(resultImage || resultVideo) && (
                 <div className="mt-6">
-                    <h3 className="text-lg font-semibold mb-2">Ảnh đã đổi màu:</h3>
-                    <img src={resultImage} alt="Kết quả DeOldify" className="rounded-lg shadow-md max-w-full" />
+                    {resultImage && (
+                        <div className="mb-4">
+                            <h3 className="text-lg font-semibold mb-2">Ảnh đã tô màu:</h3>
+                            <img src={resultImage} alt="Kết quả DeOldify" className="rounded-lg shadow-md max-w-full" />
+                        </div>
+                    )}
+                    {resultVideo && (
+                        <div>
+                            <h3 className="text-lg font-semibold mb-2">Video đã tô màu:</h3>
+                            <video
+                                src={resultVideo}
+                                controls
+                                className="rounded-lg shadow-md max-w-full"
+                                style={{ maxHeight: '400px' }}
+                            >
+                                Trình duyệt không hỗ trợ video
+                            </video>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
