@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning, message=".*?Your .*? set is empty.*?")
 colorizer = get_image_colorizer(artistic=False)
 #NOTE:  Max is 45 with 11GB video cards. 35 is a good default
-render_factor=35
+render_factor=45
 #NOTE:  Make source_url None to just read from file at ./video/source/[file_name] directly without modification
 #source_url='https://upload.wikimedia.org/wikipedia/commons/e/e4/Raceland_Louisiana_Beer_Drinkers_Russell_Lee.jpg'
 source_path = 'test_images/Anh-anime-khong-co-mau.jpg'

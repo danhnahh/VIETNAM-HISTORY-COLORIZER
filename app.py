@@ -19,7 +19,7 @@ import io
 from PIL import Image
 import uuid
 import os
-
+from fastapi.responses import FileResponse
 # ===== Khởi tạo FastAPI =====
 app = FastAPI()
 
@@ -34,6 +34,7 @@ app.add_middleware(
 
 # Load model DeOldify
 colorizer = get_image_colorizer(artistic=False)
+colorizer_vid = get_video_colorizer()
 
 @app.post("/process_image")
 async def process_image(file: UploadFile = File(...)):
@@ -63,6 +64,26 @@ async def process_image(file: UploadFile = File(...)):
     img_io.seek(0)
 
     return StreamingResponse(img_io, media_type="image/png")
+
+#gpu khoer thay 8 thanhf 21
+@app.post("/process_video")
+async def process_video(file: UploadFile = File(...), render_factor: int = 21):
+    os.makedirs("video/source", exist_ok=True)
+
+    # Lưu video upload vào video/source
+    file_basename = f"{uuid.uuid4().hex}.mp4"
+    source_path = os.path.join("video/source", file_basename)
+    with open(source_path, "wb") as f:
+        f.write(await file.read())
+
+    # Tô màu video
+    result_path = colorizer_vid.colorize_from_file_name(
+        file_basename,
+        render_factor=render_factor
+    )
+
+    # Trả file kết quả trực tiếp
+    return FileResponse(result_path, media_type="video/mp4", filename=os.path.basename(result_path))
 
 
 

@@ -115,7 +115,7 @@ test.py
 result_images
 *.prof
 *.pth
-video
+../video
 test_images/*.jpg
 test_images/*.JPG
 test_images/*.PNG
