@@ -1,23 +1,23 @@
 name: deoldify
 channels:
-- fastai
-- conda-forge
-- defaults
+  - nvidia
+  - pytorch
+  - conda-forge
+  - defaults
 dependencies:
-- pip
-- fastai=1.0.60
-- mkl=2024.0
-- python=3.10
-- pytorch::pytorch=1.11.0
-- pytorch::torchvision
-- pytorch::torchaudio
-- tensorboardX
-- jupyterlab
-- pillow>=9.0.0
-- ipywidgets
-- ffmpeg
-- pip:
-  - ffmpeg-python
-  - opencv-python>=4.2.0.32
-  - wandb
-  - yt-dlp
+  - python=3.10.4
+  - pytorch<=2.5.1
+  - torchvision<=0.20.1
+  - pytorch-cuda=12.1  # CUDA runtime cho GPU
+  - ffmpeg
+  - pip
+  - pip:
+      - deoldify
+      - imageio
+      - matplotlib
+      - scipy
+      - pandas
+      - fastprogress
+      - fastapi
+      - python-multipath
+      - uvicorn
