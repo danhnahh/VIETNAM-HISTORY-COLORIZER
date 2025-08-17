@@ -54,13 +54,14 @@ src/
    ```bash
    git clone https://github.com/your-repo.git
    cd your-repo
-   
 2. Cài đặt dependencies:
-```bash
+   ```bash
    npm install
-
 3. Chạy ứng dụng:
-```bash
+   ```bash
    npm run dev
+
+
+
 
 
