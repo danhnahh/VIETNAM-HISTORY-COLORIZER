@@ -1,4 +1,4 @@
-# AI Photo/Video Coloring App
+# VIETNAM-HISTORY-COLORIZER
 
 Ứng dụng web cho phép tải lên ảnh/video, tô màu tự động bằng AI, và quản lý album.  
 Được xây dựng với React + Vite, TailwindCSS và cấu trúc module hóa dễ mở rộng.
@@ -13,7 +13,6 @@
 
 ## Cấu trúc thư mục
 
-# Cấu trúc thư mục
 
 ```
 src/
