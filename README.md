@@ -13,30 +13,31 @@
 
 ## Cấu trúc thư mục
 
+# Cấu trúc thư mục
+
+```
 src/
-│── assets/ # Lưu trữ tài nguyên tĩnh
-│── components/ # Các component giao diện chính
-│ ├── AlbumCard.jsx
-│ ├── AlbumsView.jsx
-│ ├── GalleryView.jsx
-│ ├── Header.jsx
-│ ├── NavButton.jsx
-│ ├── PhotoCard.jsx
-│ ├── SettingsView.jsx
-│ ├── Sidebar.jsx
-│ └── UploadView.jsx
-│
-│── hooks/ # Custom hooks quản lý state
-│ ├── useAlbums.js
-│ └── usePhotos.js
-│
-│── utils/ # Hàm tiện ích xử lý
-│ └── imageProcessing.js
-│
-│── App.jsx # Component gốc
-│── App.css # CSS cho App
-│── index.css # Global CSS
-│── main.jsx # Điểm khởi chạy ứng dụng
+├── assets/                    # Lưu trữ tài nguyên tĩnh
+├── components/                # Các component giao diện chính
+│   ├── AlbumCard.jsx
+│   ├── AlbumsView.jsx
+│   ├── GalleryView.jsx
+│   ├── Header.jsx
+│   ├── NavButton.jsx
+│   ├── PhotoCard.jsx
+│   ├── SettingsView.jsx
+│   ├── Sidebar.jsx
+│   └── UploadView.jsx
+├── hooks/                     # Custom hooks quản lý state
+│   ├── useAlbums.js
+│   └── usePhotos.js
+├── utils/                     # Hàm tiện ích xử lý
+│   └── imageProcessing.js
+├── App.jsx                    # Component gốc
+├── App.css                    # CSS cho App
+├── index.css                  # Global CSS
+└── main.jsx                   # Điểm khởi chạy ứng dụng
+```
 
 
 ## Công nghệ sử dụng
@@ -53,19 +54,13 @@ src/
    ```bash
    git clone https://github.com/your-repo.git
    cd your-repo
-Cài đặt dependencies:
+   
+2. Cài đặt dependencies:
+```bash
+   npm install
 
-bash
-Copy
-Edit
-npm install
-Chạy thử
-Chạy ứng dụng ở chế độ phát triển:
-
-bash
-Copy
-Edit
-npm run dev
-
+3. Chạy ứng dụng:
+```bash
+   npm run dev
 
 
