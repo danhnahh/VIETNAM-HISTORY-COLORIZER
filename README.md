@@ -59,8 +59,3 @@ src/
 3. Chạy ứng dụng:
    ```bash
    npm run dev
-
-
-
-
-
